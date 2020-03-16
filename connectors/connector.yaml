@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: connector
+spec:
+  selector:
+    app: connector
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  clusterIP:
+---
+apiVersion: v1
+data:
+  connect-log4j.properties: |-
+    log4j.rootLogger=INFO, traceFile, stdout
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout.layout.ConversionPattern =[%d] %p %m (%c)%n
+    log4j.appender.traceFile=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.traceFile.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.traceFile.File=${kafka.logs.dir}/connect-worker-trace.log
+    log4j.appender.traceFile.layout=org.apache.log4j.PatternLayout
+    log4j.appender.traceFile.layout.ConversionPattern=[%d] %p %m (%c)%n
+    # default log levels
+    log4j.logger.org.reflections=ERROR
+    log4j.logger.org.apache.zookeeper=ERROR
+    log4j.logger.org.I0Itec.zkclient=ERROR
+    # separate Connect REST calls into a separate log
+    log4j.appender.kafkaConnectRestAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.kafkaConnectRestAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.kafkaConnectRestAppender.File=${kafka.logs.dir}/connect-rest.log
+    log4j.appender.kafkaConnectRestAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.kafkaConnectRestAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+    log4j.logger.org.apache.kafka.connect.runtime.rest=INFO, kafkaConnectRestAppender
+    log4j.additivity.org.apache.kafka.connect.runtime.rest=false
+kind: ConfigMap
+metadata:
+  name: custom-log4j
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: connector
+  labels:
+    app: connector
+spec:
+  serviceName: connector
+  replicas: 2
+  selector:
+    matchLabels:
+      app: connector
+  template:
+    metadata:
+      labels:
+        app: connector
+    spec:
+      containers:
+        - name: connector
+          image: demogeicoregistry.azurecr.io/samples/connector-base:latest
+          envFrom:
+          - configMapRef:
+              name: connect-properties 
+          ports:
+          - containerPort: 8083
+
+          volumeMounts:
+            - mountPath: /etc/kafka-custom
+              name: custom-log4j
+              readOnly: false
+
+      imagePullSecrets:
+         - name: regcred
+
+      volumes:
+        - configMap:
+            name: custom-log4j
+          name: custom-log4j
