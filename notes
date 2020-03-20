@@ -1,113 +1,39 @@
+$ kubectl create namespace <NAMESPACE>
 
 #######################################################################################################
-# Extend the Confluent Kafka Connect Base Image to create a custom Dockerfile
+# Set the default namespace context
 #######################################################################################################
-
-$ docker pull confluentinc/cp-kafka-connect-base
-$ docker run --network=host -i -t confluentinc/cp-kafka-connect-base:latest /bin/bash
-
-$ ./Dockerfile.sh
-
-$ docker build -t connector-base:latest .
-$ docker run --network=host -i -t connector-base:latest /bin/bash
-
+$ kubectl config set-context --current --namespace=operator
 
 #######################################################################################################
-# Push the Docker image to the Azure CR 
+# Create a ConfigMap for the Confluent environment settings and properties
 #######################################################################################################
-
-$ export AZURE_SUBSCRIPTION=se-team
-$ export AZURE_LOCATION=eastus
-$ export AZURE_RESOURCE_GROUP=kdavis
-$ export AZURE_CONTAINER_REGISTRY=demogeicoregistry
-
-$ az acr login --name ${AZURE_CONTAINER_REGISTRY}
-$ docker build -t connector-base:latest .
-$ docker images | grep connector-base
-$ docker tag d485710ddefb ${AZURE_CONTAINER_REGISTRY}.azurecr.io/samples/connector-base:latest
-$ docker push ${AZURE_CONTAINER_REGISTRY}.azurecr.io/samples/connector-base:latest
+$ kubectl create configmap connect-properties --from-env-file=./config.properties 
+$ kubectl describe configmap connect-properties
 
 #######################################################################################################
-# Create a secret that the deployment.yaml can reference to authenticate against the Azure CR
+# Create a secret to authenticate for access to the Container Registry in use if necessary
 #######################################################################################################
-
-$ export AZURE_SUBSCRIPTION_ID=`az account list --query "[0].id" --output tsv`
-
-$ az ad sp create-for-rbac --role contributor \
-    --scopes /subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}
-Creating a role assignment under the scope of "/subscriptions/54ff81a0-e7f6-4919-9053-4cdd1c5f5ae1/resourcegroups/kdavis"
-  Retrying role assignment creation: 1/36
-  Retrying role assignment creation: 2/36
-  Retrying role assignment creation: 3/36
-  Retrying role assignment creation: 4/36
-  Retrying role assignment creation: 5/36
-{
-  "appId": "da79e8d3-70fe-4129-a522-68d3712009ff",
-  "displayName": "azure-cli-2020-03-11-16-51-13",
-  "name": "http://azure-cli-2020-03-11-16-51-13",
-  "password": "5bf4118c-fb66-43ea-9da8-100edd3e5ce4",
-  "tenant": "0893715b-959b-4906-a185-2789e1ead045"
-}
-
-$ docker login demogeicoregistry.azurecr.io -u da79e8d3-70fe-4129-a522-68d3712009ff
-
-$ kubectl create namespace totalwine
-
-$ kubectl create secret docker-registry regcred -n totalwine \
+$ kubectl create secret docker-registry regcred -n demo \
   --docker-server=${AZURE_CONTAINER_REGISTRY}.azurecr.io \
-  --docker-username=da79e8d3-70fe-4129-a522-68d3712009ff \
-  --docker-password=5bf4118c-fb66-43ea-9da8-100edd3e5ce4
+  --docker-username=<USERNAME> \
+  --docker-password=<PASSWORD>
 
 #######################################################################################################
-# Pass environment variables to the container instances
-# Ref: https://docs.confluent.io/current/installation/docker/config-reference.html
-# Modifies: /etc/kafka-connect/kafka-connect.properties
-#######################################################################################################
-
-$ kubectl create configmap connect-properties --from-env-file=./config.properties -n totalwine
-$ kubectl -n totalwine describe configmap connect-properties
-$ kubectl apply -f deployment.yaml -n totalwine
-
-
-#######################################################################################################
-# Pass environment variables to the container instances
 # Some troubleshooting commands
 #######################################################################################################
+$ kubectl get events --sort-by=.metadata.creationTimestamp 
+$ kubectl describe po connector-0
+$ kubectl logs connector-0
 
-$ kubectl config set-context $(kubectl config current-context) --namespace=totalwine
-
-$ kubectl get events --sort-by=.metadata.creationTimestamp -n totalwine
-$ kubectl -n totalwine describe po totalwine-connector-base-deployment-df77dbfc-m4hrk
-$ kubectl -n totalwine logs totalwine-connector-base-deployment-df77dbfc-m4hrk
-
-
-mysqladmin variables -u mysqluser -p | grep log_bin
-
-mysqladmin variables -u mysqluser -p | grep server_id
-223344
-
-mysql -u mysqluser --password=mysqlpw -e "use demo; insert into member (full_name, birthdate, account_hash, modifiedTS) values ('kenton t davis', '2008-7-04', 10001, CURDATE());"
-
-mysql> desc member
-    -> ;
-+--------------+--------------+------+-----+---------+----------------+
-| Field        | Type         | Null | Key | Default | Extra          |
-+--------------+--------------+------+-----+---------+----------------+
-| id           | int(11)      | NO   | PRI | NULL    | auto_increment |
-| full_name    | varchar(255) | NO   |     | NULL    |                |
-| birthdate    | date         | YES  |     | NULL    |                |
-| account_hash | bigint(15)   | YES  |     | NULL    |                |
-| modifiedTS   | datetime     | YES  |     | NULL    |                |
-+--------------+--------------+------+-----+---------+----------------+
-
-ccloud api-key use ROKKSY42W5275QCE
-ccloud kafka cluster use lkc-w7ryj
+#######################################################################################################
+# Use the CLI to connect to Confluent Cloud for additional admin
+#######################################################################################################
+ccloud api-key use <API_KEY>
+ccloud kafka cluster use <CLUSTER>
 ccloud kafka topic list
-ccloud kafka topic create dbhistory.demo
-ccloud kafka topic create dbserver1
+ccloud kafka topic create dbhistory.dbserver1
 ccloud kafka topic create dbserver1.demo.member
 
-ccloud kafka topic delete dbhistory.demo
-ccloud kafka topic delete dbserver1
-ccloud kafka topic delete dbserver1.demo.member
+
 
