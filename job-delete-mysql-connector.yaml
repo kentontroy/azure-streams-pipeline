@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-mysql-connector
+spec:
+  ttlSecondsAfterFinished: 180
+  template:
+    spec:
+      containers:
+      - name: delete-mysql-connector
+        image: curlimages/curl
+        imagePullPolicy: IfNotPresent
+        command:
+          - "curl" 
+          - "-X"
+          - "DELETE"
+          - "connector-0.connector.totalwine.svc.cluster.local:8083/connectors/mysql"
+
+      restartPolicy: Never
