@@ -3,7 +3,7 @@ $ kubectl create namespace <NAMESPACE>
 #######################################################################################################
 # Set the default namespace context
 #######################################################################################################
-$ kubectl config set-context --current --namespace=operator
+$ kubectl config set-context --current --namespace=<NAMESPACE>
 
 #######################################################################################################
 # Create a ConfigMap for the Confluent environment settings and properties
