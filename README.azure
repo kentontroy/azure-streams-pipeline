@@ -1,8 +1,81 @@
 #######################################################################################################
+# Install the Azure CLI (on a Mac in this case)
+#######################################################################################################
+$ brew update && brew install azure-cli
+
+#######################################################################################################
 # Configure Azure environment variables
 #######################################################################################################
-export AZURE_SUBSCRIPTION=<
-export AZURE_LOCATION=eastus
-export AZURE_RESOURCE_GROUP=kdavis
-export AZURE_VNET=vNetGeico
-export AZURE_VNET_SUBNET=vNetGeico
+$ export AZURE_SUBSCRIPTION=<SUBSCRIPTION>
+$ export AZURE_LOCATION=<LOCATION>
+$ export AZURE_RESOURCE_GROUP=<RESOURCE GROUP>
+
+#######################################################################################################
+# Login to Azure
+#######################################################################################################
+$ az login
+# Choose the right subscription if necessary
+$ az account set --subscription ${AZURE_SUBSCRIPTION}
+# Create new resource group if needed
+$ az group create --name ${AZURE_RESOURCE_GROUP} --location ${AZURE_LOCATION}
+
+#######################################################################################################
+# Create network plumbing if necessary
+#######################################################################################################
+$ az network vnet create -g ${AZURE_RESOURCE_GROUP} -n ${AZURE_VNET} \
+      --address-prefix 10.0.0.0/16 --subnet-name ${AZURE_VNET_SUBNET} --subnet-prefix 10.0.0.0/20
+
+$ az network vnet subnet list --resource-group ${AZURE_RESOURCE_GROUP} --vnet-name ${AZURE_VNET} \
+      --query "[0].id" --output tsv
+
+$ export AZURE_VNET=<VIRTUAL NETWORK>
+$ export AZURE_VNET_SUBNET=<VIRTUAL SUBNET>
+
+#######################################################################################################
+# Create storage account and container if necessary
+#######################################################################################################
+$ export AZURE_STORAGE_ACCOUNT=<STORAGE ACCOUNT>
+$ az storage account create \
+    --name ${AZURE_STORAGE_ACCOUNT} \
+    --resource-group ${AZURE_RESOURCE_GROUP} \
+    --https-only true \
+    --kind StorageV2 \
+    --location ${AZURE_LOCATION} \
+    --sku Standard_LRS
+
+$ export AZURE_STORAGE_KEY=$(az storage account keys list \
+    --account-name ${AZURE_STORAGE_ACCOUNT} \
+    --resource-group ${AZURE_RESOURCE_GROUP} \
+    --query [0].value -o tsv)
+
+$ export AZURE_STORAGE_CONTAINER=kedavisdemo1
+$ az storage container create \
+    --name ${AZURE_STORAGE_CONTAINER} \
+    --account-key ${AZURE_STORAGE_KEY} \
+    --account-name ${AZURE_STORAGE_ACCOUNT}
+
+#######################################################################################################
+# Create an HDInsight Cluster
+#######################################################################################################
+export AZURE_HDINSIGHT_CLUSTER_NAME=<CLUSTER NAME>
+export AZURE_HDINSIGHT_HTTP_USER=<HTTP USER>
+export AZURE_HDINSIGHT_HTTP_PWD=<HTTP PWD>
+export AZURE_HDINSIGHT_SSH_USER=<SSH USER>
+export AZURE_HDINSIGHT_SSH_PWD=<SSH PWD>
+
+az hdinsight create \
+    --name ${AZURE_HDINSIGHT_CLUSTER_NAME} \
+    --resource-group ${AZURE_RESOURCE_GROUP} \
+    --type spark \
+    --version=3.6 \
+    --component-version=Spark=2.3 \
+    --http-password ${AZURE_HDINSIGHT_HTTP_PWD} \
+    --http-user ${AZURE_HDINSIGHT_HTTP_USER} \
+    --location ${AZURE_LOCATION} \
+    --workernode-count 3 \
+    --ssh-password ${AZURE_HDINSIGHT_SSH_PWD} \
+    --ssh-user ${AZURE_HDINSIGHT_SSH_USER} \
+    --storage-account ${AZURE_STORAGE_ACCOUNT} \
+    --storage-account-key ${AZURE_STORAGE_KEY} \
+    --storage-container ${AZURE_STORAGE_CONTAINER}
+
