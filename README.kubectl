@@ -1,3 +1,5 @@
+$ cd connectors
+
 $ kubectl create namespace <NAMESPACE>
 
 #######################################################################################################
@@ -20,20 +22,17 @@ $ kubectl create secret docker-registry regcred -n demo \
   --docker-password=<PASSWORD>
 
 #######################################################################################################
+# Create a Pod from the customized Kafka Connector image
+#######################################################################################################
+$ kubectl apply -f connector.yaml
+
+#######################################################################################################
 # Some troubleshooting commands
 #######################################################################################################
 $ kubectl get events --sort-by=.metadata.creationTimestamp 
 $ kubectl describe po connector-0
 $ kubectl logs connector-0
 
-#######################################################################################################
-# Use the CLI to connect to Confluent Cloud for additional admin
-#######################################################################################################
-ccloud api-key use <API_KEY>
-ccloud kafka cluster use <CLUSTER>
-ccloud kafka topic list
-ccloud kafka topic create dbhistory.dbserver1
-ccloud kafka topic create dbserver1.demo.member
 
 
 
