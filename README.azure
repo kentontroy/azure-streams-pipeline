@@ -79,3 +79,11 @@ $ az hdinsight create \
     --storage-account-key ${AZURE_STORAGE_KEY} \
     --storage-container ${AZURE_STORAGE_CONTAINER}
 
+# Test the exposed endpoints
+$ ssh -l ${AZURE_HDINSIGHT_SSH_USER} ${AZURE_HDINSIGHT_CLUSTER_NAME}-ssh.azurehdinsight.net
+
+# HTTP endpoint
+# https://${AZURE_HDINSIGHT_CLUSTER_NAME}.azurehdinsight.net
+
+
+
