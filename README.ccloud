@@ -1,0 +1,8 @@
+#######################################################################################################
+# Use the CLI to connect to Confluent Cloud for additional admin
+#######################################################################################################
+ccloud api-key use <API_KEY>
+ccloud kafka cluster use <CLUSTER>
+ccloud kafka topic list
+ccloud kafka topic create dbhistory.dbserver1
+ccloud kafka topic create dbserver1.demo.member
