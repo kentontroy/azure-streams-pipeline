@@ -57,13 +57,13 @@ $ az storage container create \
 #######################################################################################################
 # Create an HDInsight Cluster
 #######################################################################################################
-export AZURE_HDINSIGHT_CLUSTER_NAME=<CLUSTER NAME>
-export AZURE_HDINSIGHT_HTTP_USER=<HTTP USER>
-export AZURE_HDINSIGHT_HTTP_PWD=<HTTP PWD>
-export AZURE_HDINSIGHT_SSH_USER=<SSH USER>
-export AZURE_HDINSIGHT_SSH_PWD=<SSH PWD>
+$ export AZURE_HDINSIGHT_CLUSTER_NAME=<CLUSTER NAME>
+$ export AZURE_HDINSIGHT_HTTP_USER=<HTTP USER>
+$ export AZURE_HDINSIGHT_HTTP_PWD=<HTTP PWD>
+$ export AZURE_HDINSIGHT_SSH_USER=<SSH USER>
+$ export AZURE_HDINSIGHT_SSH_PWD=<SSH PWD>
 
-az hdinsight create \
+$ az hdinsight create \
     --name ${AZURE_HDINSIGHT_CLUSTER_NAME} \
     --resource-group ${AZURE_RESOURCE_GROUP} \
     --type spark \
