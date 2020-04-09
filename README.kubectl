@@ -1,10 +1,7 @@
-$ cd connectors
-
-$ kubectl create namespace <NAMESPACE>
-
 #######################################################################################################
 # Set the default namespace context
 #######################################################################################################
+$ kubectl create namespace <NAMESPACE>
 $ kubectl config set-context --current --namespace=<NAMESPACE>
 
 #######################################################################################################
@@ -22,9 +19,10 @@ $ kubectl create secret docker-registry regcred -n demo \
   --docker-password=<PASSWORD>
 
 #######################################################################################################
-# Create a Pod from the customized Kafka Connector image
+# Create Pods from the customized Kafka Connector and MySQL images
 #######################################################################################################
-$ kubectl apply -f connector.yaml
+$ kubectl apply -f ./connectors/connector.yaml
+$ kubectl apply -f ./mysql/mysql.yaml
 
 #######################################################################################################
 # Some troubleshooting commands
