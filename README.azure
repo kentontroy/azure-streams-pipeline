@@ -1,0 +1,8 @@
+#######################################################################################################
+# Configure Azure environment variables
+#######################################################################################################
+export AZURE_SUBSCRIPTION=<
+export AZURE_LOCATION=eastus
+export AZURE_RESOURCE_GROUP=kdavis
+export AZURE_VNET=vNetGeico
+export AZURE_VNET_SUBNET=vNetGeico
