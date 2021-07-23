@@ -21,13 +21,28 @@ $ kubectl config set-context --current --namespace=<NAMESPACE>
 $ kubectl create configmap connect-properties --from-env-file=./config.properties 
 $ kubectl describe configmap connect-properties
 
-#######################################################################################################
-# Create a secret to authenticate for access to the Container Registry in use if necessary
-#######################################################################################################
+######################################################################################################################
+# Need to create the regcred secret containing the credentials that operator will use to pull
+# custom Docker images from ACR
+######################################################################################################################
+$ export AZURE_SUBSCRIPTION_ID=`az account list --query "[0].id" --output tsv`
+
+$ az ad sp create-for-rbac --role contributor \
+  --scopes /subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}
+{
+  "appId": ----,
+  "displayName": "azure-cli-2020-01-02-15-04-25",
+  "name": "http://azure-cli-2020-01-02-15-04-25",
+  "password": ----,
+  "tenant": ----
+}
+
+$ docker login ${AZURE_CONTAINER_REGISTRY}.azurecr.io -u <app id from rbac>
+
 $ kubectl create secret docker-registry regcred -n demo \
   --docker-server=${AZURE_CONTAINER_REGISTRY}.azurecr.io \
-  --docker-username=<USERNAME> \
-  --docker-password=<PASSWORD>
+  --docker-username=<app id from rbac> \
+  --docker-password=<password from rbac>
 
 #######################################################################################################
 # Create Pods from the customized MySQL image
