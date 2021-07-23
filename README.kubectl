@@ -19,9 +19,8 @@ $ kubectl create secret docker-registry regcred -n demo \
   --docker-password=<PASSWORD>
 
 #######################################################################################################
-# Create Pods from the customized Kafka Connector and MySQL images
+# Create Pods from the customized MySQL image
 #######################################################################################################
-$ kubectl apply -f ./connectors/connector.yaml
 $ kubectl apply -f ./mysql/mysql.yaml
 
 #######################################################################################################
