@@ -1,4 +1,15 @@
 #######################################################################################################
+# Configure command line options
+#######################################################################################################
+
+# Use whatever directory is preferred in your own environment
+$ [[ -r "/Users/kdavis/Downloads/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/Users/kdavis/Downloads/homebrew/etc/profile.d/bash_completion.sh"
+$ source <(kubectl completion bash)
+$ alias k=kubectl
+$ alias po=pods
+$ complete -o default -F __start_kubectl k
+
+#######################################################################################################
 # Set the default namespace context
 #######################################################################################################
 $ kubectl create namespace <NAMESPACE>
