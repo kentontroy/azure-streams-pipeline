@@ -19,6 +19,17 @@ $ az account set --subscription ${AZURE_SUBSCRIPTION}
 # Create new resource group if needed
 $ az group create --name ${AZURE_RESOURCE_GROUP} --location ${AZURE_LOCATION}
 
+######################################################################################################################
+# Create a repository in the Azure Container Registry
+######################################################################################################################
+$ az acr create --resource-group ${AZURE_RESOURCE_GROUP} --name ${AZURE_CONTAINER_REGISTRY} --sku Basic
+$ az acr login --name ${AZURE_CONTAINER_REGISTRY}
+# If the login fails from MacOS, open Keychain Access app, select login, and then Lock followed by Unlock
+
+# Make the Azure Container Registry the default for the CLI
+$ az configure --defaults acr=${AZURE_CONTAINER_REGISTRY}
+
+
 #######################################################################################################
 # Create network plumbing if necessary
 #######################################################################################################
